@@ -14,8 +14,9 @@
 //==============================================================================
 /**
 */
-class MyPlugInAudioProcessorEditor  : public juce::AudioProcessorEditor
-{
+class MyPlugInAudioProcessorEditor  : public juce::AudioProcessorEditor, 
+                                      private juce::Slider::Listener
+{   
 public:
     MyPlugInAudioProcessorEditor (MyPlugInAudioProcessor&);
     ~MyPlugInAudioProcessorEditor() override;
@@ -25,9 +26,13 @@ public:
     void resized() override;
 
 private:
+    void sliderValueChanged(juce::Slider* slider) override;
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     MyPlugInAudioProcessor& audioProcessor;
+
+    juce::Slider freqDepth;
+    juce::Slider LFOFreq;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MyPlugInAudioProcessorEditor)
 };

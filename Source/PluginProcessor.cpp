@@ -136,14 +136,17 @@ void MyPlugInAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
     auto numSamples = buffer.getNumSamples();
     auto numChannels = buffer.getNumChannels();
 
-    float delaySample = 0;
-    float bufferSample = 0;
-    float newValue = 0;
-    float delayGain = 0.8;
-    float depthLeftSamples = 48000.0f * ( ((float)f_ratio - 1.0f) / (float)(2.0f * M_PI * (float)left_LFO1.getFrequency()) );
-    float depthRightSamples = 48000.0f * ( ((float)f_ratio - 1.0f) / (float) (2.0f * M_PI * (float)right_LFO1.getFrequency()) );
+    float delaySample = 0.0f;
+    float bufferSample = 0.0f;
+    float newValue = 0.0f;
+    float delayGain = 0.8f;
+    float depthLeftSamples;
+    float depthRightSamples;
 
-    float delayChange = 0;
+    depthLeftSamples = 48000.0f * (((float)f_ratio - 1.0f) / (float)(2.0f * M_PI * (float)left_LFO1.getFrequency()));
+    depthRightSamples = 48000.0f * (((float)f_ratio - 1.0f) / (float)(2.0f * M_PI * (float)right_LFO1.getFrequency()));
+
+    float delayChange = 0.0f;
 
     juce::AudioBuffer<float> processBuffer = juce::AudioBuffer<float>(totalNumOutputChannels, numSamples);
 
@@ -187,7 +190,7 @@ void MyPlugInAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
             simpleDelay.setSample((bufferSample), channel);
             simpleDelay.incrementDelay(channel);
 
-            channelData[index] = delaySample;
+            channelData[index] = newValue;
         }
      
     }

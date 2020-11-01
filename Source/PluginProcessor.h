@@ -34,8 +34,8 @@ public:
     void setLength(int userLength)
     {
         length = userLength;
-        leftLine = std::vector<float>(userLength, 0);
-        rightLine = std::vector<float>(userLength, 0);
+        leftLine = std::vector<float>(length, 0);
+        rightLine = std::vector<float>(length, 0);
     };
 
     int getLength()
@@ -55,7 +55,7 @@ public:
         if (lineSelect == 0) 
         {
             x1 = *leftIter;
-            if (delayChange == 0)
+            if (delayChange < 0.1)
                 return x1;
             else 
             {
@@ -66,7 +66,7 @@ public:
         else
         {
             x1 = *rightIter;
-            if (delayChange == 0)
+            if (delayChange < 0.1)
                 return x1;
             else
             {
@@ -100,7 +100,7 @@ public:
             {
                 returnVal = rightLine.at(intDelay - (rightLine.end() - rightIter)) * fracDelay + rightLine.at(intDelay - (rightLine.end() - rightIter)) * (1 - fracDelay);
             }
-            else if ((rightIter + intDelay) == rightLine.end() - 1 || (leftIter + intDelay) == leftLine.end() - 2 )
+            else if ((rightIter + intDelay) == rightLine.end() - 1 || (rightIter + intDelay) == rightLine.end() - 2 )
             {
                 returnVal = *(rightLine.end() - 1) * fracDelay + *rightLine.begin() * (1 - fracDelay);
             }
@@ -130,7 +130,7 @@ public:
     {
         if (lineSelect == 0)
         {
-            if (leftIter == leftLine.end() - 1)
+            if (leftIter >= leftLine.end() - 1)
             {
                 leftIter = leftLine.begin();
             }
@@ -141,7 +141,7 @@ public:
         }
         else
         {
-            if (rightIter == rightLine.end() - 1)
+            if (rightIter >= rightLine.end() - 1)
             {
                 rightIter = rightLine.begin();
             }
@@ -185,64 +185,66 @@ public:
     LFO(float user_f_LFO)
     {
         f_LFO = user_f_LFO;
-        values = std::vector<float>((int)(f_s / f_LFO), 0);
-        populateLFO();
+        maxPhaseStep = (int)(f_s / f_LFO);
     }
 
     float getCurrentValue()
     {
-        return *LFOIter;
+        return cos( (2.0f * M_PI * (float)phaseStep * ( f_LFO / f_s ) ) + phaseOffset);
     };
 
     void resetFrequency(float user_f_LFO)
     {
         f_LFO = user_f_LFO;
-        populateLFO();
+        maxPhaseStep = (int)(f_s / f_LFO);
+        if (phaseStep >= maxPhaseStep - 1)
+        {
+            phaseStep = 0;
+        }
+    };
+
+    void setPhaseOffset(float user_phaseOffset)
+    {
+        phaseOffset = user_phaseOffset;
+    };
+
+    float getPhaseOffset()
+    {
+        return phaseOffset;
     };
 
     float getFrequency() {
         return f_LFO;
     }
 
-    void populateLFO()
-    {
-        for(int i = 0; i < values.size(); i++)
-        {
-            values.at(i) = (float)cos(2.0f * M_PI * (float)(i) * (float)(f_LFO / f_s));
-        }
-        //for (std::vector<float>::iterator iter = values.begin(); iter != values.end(); ++iter)
-        //{
-            //*iter = (float)cos(2.0f * M_PI * (float)(iter - values.begin()) * f_LFO / f_s);
-        //}
-        LFOIter = values.begin();
-    };
-
     void incrementLFO()
     {
-        if (LFOIter == values.end() - 1) 
+        if (phaseStep < maxPhaseStep - 1)
         {
-            LFOIter = values.begin();
+            phaseStep++;
         }
-        else
+        else if (phaseStep >=  maxPhaseStep - 1)
         {
-            LFOIter++;
+            phaseStep = 0;
         }
     };
 
 private:
-    std::vector<float>::iterator LFOIter;
-    std::vector<float> values;
+    int phaseStep = 0;
+    int maxPhaseStep;
+    float phaseOffset = 0.0f;
     float f_LFO;
-    float f_s = 48000;
+    float f_s = 48000.0f;
 };
 
 class MyPlugInAudioProcessor  : public juce::AudioProcessor
 {
 public:
-    float f_ratio = 1.059f;
-    float left_LFO1_frequency = 0.5;
-    float right_LFO1_frequency = 0.5;
-    MyDelayLine simpleDelay = MyDelayLine(3600);
+    int delayLength = 650;
+    float f_ratio;
+    float left_LFO1_frequency= 1.0f;
+    float right_LFO1_frequency = 1.0f;
+    MyDelayLine simpleDelay = MyDelayLine(650);
     LFO left_LFO1 = LFO(left_LFO1_frequency);
     LFO right_LFO1 = LFO(right_LFO1_frequency);
 
