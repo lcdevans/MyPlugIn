@@ -1,7 +1,11 @@
 /*
   ==============================================================================
+    Author: Luke Evans
+    Purpose: ECE 484 Final Main Code (Flanger/Chorus VST3 Plugin)
 
     This file contains the basic framework code for a JUCE plugin processor.
+
+    The changes made to this file to implement the flanger appears in the processBlock method only.
 
   ==============================================================================
 */
@@ -127,6 +131,7 @@ bool MyPlugInAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts)
 }
 #endif
 
+// All code written for ECE 484 in this file appears in this method
 void MyPlugInAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
@@ -136,60 +141,60 @@ void MyPlugInAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
     auto numSamples = buffer.getNumSamples();
     auto numChannels = buffer.getNumChannels();
 
+    // Set up values to store data in various stages
     float delaySample = 0.0f;
     float bufferSample = 0.0f;
     float newValue = 0.0f;
-    float delayGain = 0.8f;
+    float regenValue = 0.0f;
     float depthLeftSamples;
     float depthRightSamples;
+    float delayChange = 0.0f;
 
+    // Convert the vibrato's frequency ratio into a number of samples
     depthLeftSamples = 48000.0f * (((float)f_ratio - 1.0f) / (float)(2.0f * M_PI * (float)left_LFO1.getFrequency()));
     depthRightSamples = 48000.0f * (((float)f_ratio - 1.0f) / (float)(2.0f * M_PI * (float)right_LFO1.getFrequency()));
 
-    float delayChange = 0.0f;
 
+    // Pull a frame of audio samples into a buffer
     juce::AudioBuffer<float> processBuffer = juce::AudioBuffer<float>(totalNumOutputChannels, numSamples);
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-
+    // Loop over stereo channels
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
-
+        // Get a pointer to the beginning of the channel buffer
         auto* channelData = buffer.getWritePointer (channel);
 
+        // Loop over indices in the channel
         for (int index = 0; index < numSamples; index++)
         {
+            // Calculate the number of samples of delay needed for the vibrato portion and increment the LFO
             if (channel == 0) 
             {
-                delayChange = ( (float)depthLeftSamples / 2.0f ) * (1.0f + (float)left_LFO1.getCurrentValue());
+                delayChange = -1.0f * delayMinimum - ( (float)depthLeftSamples / 2.0f ) * (1.0f + (float)left_LFO1.getCurrentValue());
                 left_LFO1.incrementLFO();
             }
             else if (channel == 1) 
             {
-                delayChange = ( (float)depthRightSamples / 2.0f ) * (1.0f + (float)right_LFO1.getCurrentValue());
+                delayChange = -1.0f * delayMinimum - ( (float)depthRightSamples / 2.0f ) * (1.0f + (float)right_LFO1.getCurrentValue());
                 right_LFO1.incrementLFO();
             }
+
+            // Retrieve samples from the delay line and the input buffer
             delaySample = simpleDelay.getSample(delayChange, channel);
             bufferSample = *buffer.getReadPointer(channel, index);
 
-            newValue = 0.5f*((float)bufferSample + (float)delayGain * (float)delaySample);
-            simpleDelay.setSample((bufferSample), channel);
+            // Calculate output value and regeneration value to place back into the delay line
+            newValue = 1.0f / (1.0f + (float)delayGain) * ((float)bufferSample + (float)delayGain * (float)delaySample);
+            regenValue = 1.0f / (1.0f + (float)regenGain) * (float)(bufferSample + (float)regenGain * (float)delaySample);
+
+            // Replace the delay line head value and increment the delay line
+            simpleDelay.setSample(regenValue, channel);
             simpleDelay.incrementDelay(channel);
 
+            // Place the output value back in the buffer
             channelData[index] = newValue;
         }
      

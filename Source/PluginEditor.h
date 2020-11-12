@@ -1,5 +1,9 @@
 /*
   ==============================================================================
+    Author: Luke Evans
+    Purpose: ECE 484 Final Project Editor Header File (Flanger/Chorus VST3 Plugin)
+
+    The slider definitions are the only changes by the author.
 
     This file contains the basic framework code for a JUCE plugin editor.
 
@@ -32,7 +36,13 @@ private:
     MyPlugInAudioProcessor& audioProcessor;
 
     juce::Slider freqDepth;
-    juce::Slider LFOFreq;
+    juce::Slider rateCoarse;
+    juce::Slider rateFine;
+    juce::Slider delayCoarse;
+    juce::Slider delayFine;
+    juce::Slider phaseBalance;
+    juce::Slider delayGain;
+    juce::Slider regenGain;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MyPlugInAudioProcessorEditor)
 };
