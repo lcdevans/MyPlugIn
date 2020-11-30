@@ -5,7 +5,7 @@
 
     This file contains the basic framework code for a JUCE plugin processor.
 
-    The changes made to this file to implement the flanger appears in the processBlock method only.
+    The changes made to this file to implement the flanger appear in the processBlock method only.
 
   ==============================================================================
 */
@@ -187,8 +187,8 @@ void MyPlugInAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
             bufferSample = *buffer.getReadPointer(channel, index);
 
             // Calculate output value and regeneration value to place back into the delay line
-            newValue = 1.0f / (1.0f + (float)delayGain) * ((float)bufferSample + (float)delayGain * (float)delaySample);
-            regenValue = 1.0f / (1.0f + (float)regenGain) * (float)(bufferSample + (float)regenGain * (float)delaySample);
+            newValue = ( 1.0f - (float)delayGain) * (float)bufferSample + (float)delayGain * (float)delaySample ;
+            regenValue = (1.0f - (float)regenGain) * (float)bufferSample + (float)regenGain * (float)delaySample ;
 
             // Replace the delay line head value and increment the delay line
             simpleDelay.setSample(regenValue, channel);

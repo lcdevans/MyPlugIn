@@ -364,11 +364,6 @@ public:
     // Create left and right LFOs
     LFO left_LFO1 = LFO(left_LFO1_frequency);
     LFO right_LFO1 = LFO(right_LFO1_frequency);
-    // Create left and right LFOs for the minimum delay LFOs
-    LFO minDelayLFO_left = LFO(0.1f);
-    LFO minDelayLFO_right = LFO(0.1f);
-
-
 
     //==============================================================================
     MyPlugInAudioProcessor();

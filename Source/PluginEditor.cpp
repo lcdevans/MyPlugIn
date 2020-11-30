@@ -86,22 +86,22 @@ MyPlugInAudioProcessorEditor::MyPlugInAudioProcessorEditor (MyPlugInAudioProcess
     phaseBalance.setValue(0.0);
     addAndMakeVisible(&phaseBalance);
     phaseBalance.addListener(this);
-    
+
     // delayGain parameters
     delayGain.setSliderStyle(juce::Slider::Rotary);
     delayGain.setRotaryParameters(-2.34, 2.34, true);
-    delayGain.setRange(0, 1, 0.1);
+    delayGain.setRange(0, 1, 0.01);
     delayGain.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 25);
     delayGain.setPopupDisplayEnabled(true, false, this);
     delayGain.setTextValueSuffix("");
-    delayGain.setValue(0.8);
+    delayGain.setValue(0.5);
     addAndMakeVisible(&delayGain);
     delayGain.addListener(this);
 
     // regenGain parameters
     regenGain.setSliderStyle(juce::Slider::Rotary);
     regenGain.setRotaryParameters(-2.34, 2.34, true);
-    regenGain.setRange(0, 1, 0.1);
+    regenGain.setRange(0, 0.95, 0.01);
     regenGain.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 25);
     regenGain.setPopupDisplayEnabled(true, false, this);
     regenGain.setTextValueSuffix("");
@@ -152,7 +152,7 @@ void MyPlugInAudioProcessorEditor::paint (juce::Graphics& g)
     g.drawFittedText("Phase Offset", 485, 130, 60, 30, juce::Justification::centred, 2, 1.0f);
     g.drawFittedText("Delay Gain", 215, 270, 60, 30, juce::Justification::centred, 2, 1.0f);
     g.setFont(15.0f);
-    g.drawFittedText("Regeneration", 280, 270, 120, 30, juce::Justification::centred, 2, 1.0f);
+    g.drawFittedText("Regeneration", 270, 270, 120, 30, juce::Justification::centred, 2, 1.0f);
 }
 
 void MyPlugInAudioProcessorEditor::resized()
